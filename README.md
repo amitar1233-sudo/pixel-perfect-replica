@@ -1,24 +1,51 @@
-# Pixel-Perfect Replica
+# Flight Price Notifier
 
-Implement exactly the screenshot and nothing else
+A client-side React single-page app (Vite + React Router + Tailwind v4 + Supabase auth).
+`vite build` produces a fully static site in `dist/`, ready for Vercel or any static host.
 
-This project was built with [Lovable](https://lovable.dev).
+## Routes
 
-## Build with Lovable
+| Path      | Page                                   |
+| --------- | -------------------------------------- |
+| `/`       | Landing page                           |
+| `/signin` | Sign in                                |
+| `/signup` | Sign up                                |
+| `/app`    | Dashboard (redirects to `/signin` when signed out) |
+| `*`       | 404                                    |
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/ba27a5f4-0749-4b4e-8476-a44a819ca8a5).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+Routes are defined in `src/router.tsx`; pages live in `src/pages/`.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requires Node.js 20+.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+npm ci
+npm run dev      # http://localhost:8080
+npm test
+npm run build    # type-checks, then outputs dist/
+npm run preview  # serve dist/ locally
 ```
+
+## Environment variables
+
+Read at **build time** (Vite inlines `VITE_*` vars into the bundle):
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+They're currently in `.env`. You can instead set them in Vercel → Project → Settings →
+Environment Variables (values there override `.env`).
+
+## Deploying to Vercel
+
+Import the repo in Vercel; `vercel.json` already sets the Vite preset, `npm run build`,
+the `dist` output directory, and a SPA fallback rewrite so deep links such as `/app`
+load `index.html` and are routed client-side.
+
+In your Supabase project's Auth settings, add your Vercel domain to **Site URL** /
+**Redirect URLs** (e.g. `https://your-app.vercel.app/app`) so sign-up confirmation
+emails redirect back correctly.
+
+`.npmrc` sets `legacy-peer-deps=true` to work around an npm 10 resolver crash with
+vitest 4's peer-dependency graph.

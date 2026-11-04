@@ -1,30 +1,24 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteHeader";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
-export const Route = createFileRoute("/app")({
-  head: () => ({
-    meta: [
-      { title: "Dashboard — Flight Price Notifier" },
-      { name: "description", content: "Your flight route tracking dashboard." },
-      { property: "og:title", content: "Dashboard — Flight Price Notifier" },
-      { property: "og:description", content: "Your flight route tracking dashboard." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
-  component: AppShell,
-});
-
-function AppShell() {
+export default function AppShell() {
+  usePageMeta("Dashboard — Flight Price Notifier", [
+    { name: "description", content: "Your flight route tracking dashboard." },
+    { property: "og:title", content: "Dashboard — Flight Price Notifier" },
+    { property: "og:description", content: "Your flight route tracking dashboard." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ]);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/signin" });
+    if (!loading && !user) navigate("/signin");
   }, [loading, user, navigate]);
 
   if (loading || !user) return <div className="min-h-screen bg-background" />;
@@ -37,7 +31,7 @@ function AppShell() {
             variant="outline"
             onClick={async () => {
               await supabase.auth.signOut();
-              navigate({ to: "/" });
+              navigate("/");
             }}
           >
             Sign out / 登出
