@@ -34,8 +34,10 @@ Read at **build time** (Vite inlines `VITE_*` vars into the bundle):
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 
-They're currently in `.env`. You can instead set them in Vercel → Project → Settings →
-Environment Variables (values there override `.env`).
+They point at the project's own Supabase project (`ckcnwiwdvhigsccxdbdn`) and are
+set in `.env`. The client in `src/integrations/supabase/client.ts` reads them via
+`import.meta.env`; nothing is hardcoded. On Vercel, add the same two variables under
+Project → Settings → Environment Variables (values there override `.env`), then redeploy.
 
 ## Deploying to Vercel
 
