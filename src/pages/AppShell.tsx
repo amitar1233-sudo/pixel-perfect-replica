@@ -21,10 +21,10 @@ export default function AppShell() {
     if (!loading && !user) navigate("/signin");
   }, [loading, user, navigate]);
 
-  if (loading || !user) return <div className="min-h-screen bg-background" />;
+  if (loading || !user) return <div className="min-h-screen bg-canvas" />;
 
   return (
-    <div className="min-h-screen bg-background bg-glow">
+    <div className="min-h-screen bg-canvas">
       <SiteHeader
         right={
           <Button
@@ -40,7 +40,7 @@ export default function AppShell() {
       />
       <main className="mx-auto max-w-3xl px-4 py-24 animate-fade-up">
         <h1 className="text-4xl font-bold">Hi {user.email}</h1>
-        <div className="mt-8 rounded-xl border border-border bg-card p-8">
+        <div className="mt-8 rounded-xl border border-border bg-card p-8 shadow-card backdrop-blur-sm">
           <p className="text-lg">你的航線追蹤儀表板即將上線 — 下一個里程碑會加上訂閱航線的功能。</p>
           <p className="mt-2 text-sm text-muted-foreground">
             Your dashboard is coming soon. Route-subscription will be added in the next milestone.

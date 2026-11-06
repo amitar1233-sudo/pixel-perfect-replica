@@ -28,11 +28,11 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   }
 
   return (
-    <div className="min-h-screen bg-background bg-glow">
+    <div className="min-h-screen bg-canvas">
       <SiteHeader right={null} />
       <div className="mx-auto max-w-sm px-4 py-20 animate-fade-up">
         <h1 className="text-3xl font-bold">{isUp ? "Sign up / 註冊" : "Sign in / 登入"}</h1>
-        <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
+        <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6 shadow-card backdrop-blur-sm">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />

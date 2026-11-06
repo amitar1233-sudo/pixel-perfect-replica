@@ -19,7 +19,7 @@ export default function Index() {
     { name: "twitter:card", content: "summary_large_image" },
   ]);
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-canvas">
       <SiteHeader
         right={
           <Button asChild variant="hero">
@@ -48,7 +48,7 @@ export default function Index() {
           {features.map((f, i) => (
             <div
               key={f.title}
-              className="rounded-xl border border-border bg-card p-6 animate-fade-up transition-colors hover:border-primary/50"
+              className="rounded-xl border border-border bg-card p-6 shadow-card backdrop-blur-sm animate-fade-up transition-colors hover:border-primary/50"
               style={{ animationDelay: `${150 + i * 120}ms` }}
             >
               <f.icon className="h-8 w-8 text-primary" />
