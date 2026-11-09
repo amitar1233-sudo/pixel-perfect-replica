@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteHeader";
+import { PlanCards } from "@/components/PlanCards";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function AppShell() {
@@ -40,12 +41,8 @@ export default function AppShell() {
       />
       <main className="mx-auto max-w-3xl px-4 py-24 animate-fade-up">
         <h1 className="text-4xl font-bold">Hi {user.email}</h1>
-        <div className="mt-8 rounded-xl border border-border bg-card p-8 shadow-card backdrop-blur-sm">
-          <p className="text-lg">你的航線追蹤儀表板即將上線 — 下一個里程碑會加上訂閱航線的功能。</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Your dashboard is coming soon. Route-subscription will be added in the next milestone.
-          </p>
-        </div>
+        <p className="mt-2 text-muted-foreground">選一條航線、設定目標價，降價時我們寄信通知你。</p>
+        {user.email && <PlanCards email={user.email} />}
       </main>
     </div>
   );
