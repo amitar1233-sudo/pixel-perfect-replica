@@ -3,14 +3,15 @@
 Event: {"origin": "TPE", "destination": "TYO", "route": "TPE-TYO"}
 Fetches next month's cheapest fare in TWD (the gate) and, best effort, USD
 (supplementary). Every subscriber on the route whose target_price >= the TWD
-fare gets a message on flight-fare-queue. M1: no subscription_status filter.
+fare gets a message on flight-fare-queue. M2: only paying subscribers
+(active, or cancelled but still inside current_period_end) are served.
 """
 import json
 import os
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 import boto3
@@ -90,6 +91,34 @@ def _subscribers(route):
         kwargs["ExclusiveStartKey"] = page["LastEvaluatedKey"]
 
 
+def _entitled(it, now=None):
+    """M2 paywall: serve active rows, and cancelled rows still inside their paid period.
+
+    A cancelled row whose period has ended is lazily flipped to expired here.
+    pending_payment / expired / legacy rows without a status are never served.
+    """
+    status = it.get("subscription_status")
+    if status == "active":
+        return True
+    if status != "cancelled":
+        return False
+    now_s = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    end = it.get("current_period_end")
+    if end and end >= now_s:  # fixed-width UTC strings compare chronologically
+        return True
+    try:
+        _table.update_item(
+            Key={"email": it["email"], "route": it["route"]},
+            UpdateExpression="SET subscription_status = :x, expired_at = :n, updated_at = :n",
+            ConditionExpression="subscription_status = :c",
+            ExpressionAttributeValues={":x": "expired", ":n": now_s, ":c": "cancelled"},
+        )
+        print(f"{it['email']} {it['route']}: grace ended {end} -> expired")
+    except _table.meta.client.exceptions.ConditionalCheckFailedException:
+        pass  # status changed since the scan (e.g. re-subscribed); leave it
+    return False
+
+
 def handler(event, context):
     origin, destination = event["origin"], event["destination"]
     route = event.get("route") or f"{origin}-{destination}"
@@ -108,6 +137,8 @@ def handler(event, context):
 
     matched = 0
     for it in _subscribers(route):
+        if not _entitled(it):
+            continue
         tp = it.get("target_price")
         if tp is None or Decimal(tp) < Decimal(str(tw["price"])):
             continue

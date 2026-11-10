@@ -27,5 +27,8 @@ def handler(event, context):
                 "body": json.dumps({"error": "email query parameter required"})}
     items = table.query(KeyConditionExpression=Key("email").eq(email)).get("Items", [])
     rows = [{k: _plain(v) for k, v in it.items()} for it in items]
+    for r in rows:
+        # M1 rows predate payments: surface them as unpaid so the user can self-migrate.
+        r.setdefault("subscription_status", "pending_payment")
     return {"statusCode": 200, "headers": {"Content-Type": "application/json"},
             "body": json.dumps({"subscriptions": rows}, ensure_ascii=False)}

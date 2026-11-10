@@ -12,7 +12,15 @@ export type Subscription = {
   target_price: number;
   currency: "TWD";
   updated_at?: string;
+  subscription_status?: SubscriptionStatus;
+  current_period_end?: string;
+  current_period_end_date?: string;
 };
+
+export type SubscriptionStatus = "pending_payment" | "active" | "cancelled" | "expired";
+
+/** NT$ per month, mirrors the `amount` in the flight/ecpay secret (display only). */
+export const MONTHLY_PRICE = 300;
 
 export const PLANS: {
   plan_name: PlanName;
@@ -32,22 +40,43 @@ async function readJson(res: Response) {
 }
 
 export async function listSubscriptions(email: string): Promise<Subscription[]> {
-  const res = await fetch(
-    `${FLIGHT_API_URL}/subscriptions?email=${encodeURIComponent(email)}`,
-  );
+  const res = await fetch(`${FLIGHT_API_URL}/subscriptions?email=${encodeURIComponent(email)}`);
   const data = await readJson(res);
   return data.subscriptions ?? [];
 }
 
+/**
+ * POST /subscribe. For a new or unpaid subscription the API answers with an
+ * auto-submit HTML form; we hand the whole page to it so the browser goes to
+ * ECPay's cashier (returns "redirecting"). For an already-paid subscription it
+ * answers JSON and we return the updated row.
+ */
 export async function subscribe(
   email: string,
   plan_name: PlanName,
   target_price: number,
-): Promise<Subscription> {
+): Promise<Subscription | "redirecting"> {
   const res = await fetch(`${FLIGHT_API_URL}/subscribe`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ email, plan_name, target_price }),
+  });
+  if (res.ok && (res.headers.get("content-type") ?? "").includes("text/html")) {
+    const html = await res.text();
+    document.open();
+    document.write(html);
+    document.close();
+    return "redirecting";
+  }
+  const data = await readJson(res);
+  return data.subscription;
+}
+
+export async function cancelSubscription(email: string, route: string): Promise<Subscription> {
+  const res = await fetch(`${FLIGHT_API_URL}/cancel`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email, route }),
   });
   const data = await readJson(res);
   return data.subscription;

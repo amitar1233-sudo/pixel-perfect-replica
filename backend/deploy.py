@@ -1,4 +1,4 @@
-"""Zip a backend/<dir>/index.py and create or update its Lambda.
+"""Zip a backend/<dir>/index.py (plus backend/shared/*.py) and create or update its Lambda.
 
 Usage: python backend/deploy.py <dir> <function-name> [timeout] [KEY=VAL ...]
 """
@@ -28,6 +28,10 @@ def main():
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.write(src, "index.py")
+        shared = os.path.join(here, "shared")
+        for fn in sorted(os.listdir(shared)):
+            if fn.endswith(".py"):
+                z.write(os.path.join(shared, fn), fn)
     fd, zpath = tempfile.mkstemp(suffix=".zip")
     with os.fdopen(fd, "wb") as f:
         f.write(buf.getvalue())
